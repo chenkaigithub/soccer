@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from time import sleep
 
 from sqlalchemy import Column
 from sqlalchemy import DateTime
@@ -7,10 +8,11 @@ from sqlalchemy import Float
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import String
-from sqlalchemy import TIMESTAMP
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+
+import download.main
 from download.settings import *
 
 
@@ -161,7 +163,10 @@ def save_game_results(game_list):
 
 
 if __name__ == '__main__':
-	time1 = datetime(2017, 8, 15, 12, 52)
-	current = datetime.now()
-	delta = current - time1
-	print(delta.total_seconds() // 60 // 60)
+	ts = [datetime(2017, 8, 18, 13, i) for i in range(11)]
+	fre1 = download.main.is_every_n_minutes(2)
+	fre2 = download.main.is_every_n_minutes(3)
+	for t in ts:
+		print(t, fre1(t), fre2(t))
+
+

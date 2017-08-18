@@ -1,12 +1,12 @@
 import os
 import sys
+from time import sleep
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
-import dryscrape
 import requests
 from bs4 import BeautifulSoup
 from sqlalchemy.exc import OperationalError
@@ -16,20 +16,16 @@ from download import storage
 from download.settings import *
 
 
-def get_page(with_js=False):
+def get_page():
 	print('正在加载网页{}读取数据...'.format(TRENDS_URL))
-	if with_js:
-		session = dryscrape.Session()
-		session.visit(TRENDS_URL)
-		page = session.body()
+
+	response = requests.get(TRENDS_URL)
+	if response.status_code == 200:
+		print('网页加载成功!\n')
 	else:
-		response = requests.get(TRENDS_URL)
-		if response.status_code == 200:
-			print('网页加载成功!\n')
-		else:
-			print('网页错误, 加载失败\n')
-			return None
-		page = response.content
+		print('网页错误, 加载失败\n')
+		return None
+	page = response.content
 	soup = BeautifulSoup(page, 'html.parser')
 	return soup
 
@@ -55,29 +51,47 @@ def get_results():
 		return RESULTS_URL.format(date=date)
 
 	print('开始请求比赛结果数据...')
-	page = get_page(with_js=True)
-	selector = page.find('select', id='jq_change_term')
-	options = selector.find_all('option')
 	results = []
-	for option in options:
-		date = option['value']
-		if '当前' in date:
-			continue
-		url = _construct_url(date)
-		data = str(requests.get(url).content, 'utf8')
-		data = data.replace('\'', '\"')
+	today = datetime.now().date()
+	for i in range(1, 7):
+		date = today - timedelta(days=i)
+		date_str = str(date).replace('-', '').replace('201', '1')
+
+		url = _construct_url(date_str)
+		response = str(requests.get(url).content, 'utf8')
+		data = response.replace('\'', '\"')
+
 		result_dict = json.loads(data)
 		results += parser.parse_results(result_dict)
 	print('比赛结果数据提取结束, 共找到{}场比赛结果\n'.format(len(results)))
 	return results
 
 
-def is_every_n_minutes(time, n_minutes):
-	if time.second != 0 or time.microsecond != 0:
+def is_punctual():
+	is_punctual.ticked = False
+
+	def check(time):
+		if time.minute == 0 and not is_punctual.ticked:
+			is_punctual.ticked = True
+			return True
+		elif time.minute != 0:
+			is_punctual.ticked = False
 		return False
-	if time.minute % n_minutes == 0:
-		return True
-	return False
+
+	return check
+
+
+def is_every_n_minutes(n_minutes):
+	fired = False
+	def check(time):
+		nonlocal fired
+		if time.minute % n_minutes == 0 and not fired:
+			fired = True
+			return True
+		elif time.minute % n_minutes != 0:
+			fired = False
+		return False
+	return check
 
 
 if __name__ == '__main__':
@@ -88,23 +102,27 @@ if __name__ == '__main__':
 		print("程序及将终止")
 		exit()
 
-	while True:
-		current = datetime.now()
-		if is_every_n_minutes(current, 5):
-			print(">> 当前时间: ", current)
+	trend_frequency = is_every_n_minutes(5)
+	result_frequency = is_every_n_minutes(60)
 
+	while True:
+
+		current = datetime.now()
+
+		if trend_frequency(current):
+			print(">> 当前时间: ", current)
 			data = get_trends()
 			try:
 				storage.save_game_trends(data)
 			except Exception as e:
 				print('[ERROR] 未知错误 ({}): '.format(type(e).__name__), e)
 
-		if is_every_n_minutes(current, 60):
+		if result_frequency(current):
 			print(">> 当前时间: ", current)
-
 			results = get_results()
 			try:
 				storage.save_game_results(results)
 			except Exception as e:
 				print('[ERROR] 未知错误 ({}): '.format(type(e).__name__), e)
 
+		sleep(10)
