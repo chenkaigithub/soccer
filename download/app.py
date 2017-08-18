@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 import os
 import sys
 from time import sleep
@@ -124,6 +125,7 @@ def main():
 			except Exception as e:
 				print('[ERROR] 未知错误 ({}): '.format(type(e).__name__), e)
 
+		sys.stdout.flush()
 		sleep(10)
 
 
