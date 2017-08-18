@@ -2,8 +2,6 @@ import os
 import sys
 from time import sleep
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 import json
 from datetime import datetime, timedelta
 
@@ -11,10 +9,11 @@ import requests
 from bs4 import BeautifulSoup
 from sqlalchemy.exc import OperationalError
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 import download.parser as parser
 from download import storage
 from download.settings import *
-
 
 def get_page():
 	print('正在加载网页{}读取数据...'.format(TRENDS_URL))
@@ -94,7 +93,7 @@ def is_every_n_minutes(n_minutes):
 	return check
 
 
-if __name__ == '__main__':
+def main():
 	try:
 		storage.init_database()
 	except OperationalError as oe:
@@ -126,3 +125,24 @@ if __name__ == '__main__':
 				print('[ERROR] 未知错误 ({}): '.format(type(e).__name__), e)
 
 		sleep(10)
+
+
+def run_once():
+	try:
+		storage.init_database()
+	except OperationalError as oe:
+		print("数据库初始化错误: {}".format(oe))
+		print("程序及将终止")
+		exit()
+
+	data = get_trends()
+	try:
+		storage.save_game_trends(data)
+	except Exception as e:
+		print('[ERROR] 未知错误 ({}): '.format(type(e).__name__), e)
+	results = get_results()
+	storage.save_game_results(results)
+
+
+if __name__ == '__main__':
+	main()

@@ -6,7 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from sqlalchemy.exc import OperationalError
 
 from download import storage
-from download.main import get_trends, get_results
+from download.app import get_trends, get_results
 
 if __name__ == '__main__':
 	try:
