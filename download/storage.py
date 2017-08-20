@@ -127,6 +127,10 @@ def save_game_trends(game_list):
 			continue
 		game = Game(**game_base)
 
+		# 跳过截止时间已过的比赛
+		if current > game.deadline + timedelta(minutes=1):
+			continue
+
 		result = session.query(Game).filter(Game.serial == game.serial).first()
 		if result is None:
 			session.add(game)
@@ -138,10 +142,6 @@ def save_game_trends(game_list):
 			result.endorse = game.endorse
 			game = result
 			game_id = result.id
-
-		# 跳过截止时间已过的比赛
-		if current > game.deadline + timedelta(minutes=1):
-			continue
 
 		game_odds['game_id'] = game_id
 		real_time = GameOdds(**game_odds)
