@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import Column
 from sqlalchemy import DateTime
@@ -116,6 +116,7 @@ def save_game_trends(game_list):
 	session = Session()
 	num_game = 0
 	num_rt = 0
+	current = datetime.now()
 	for game_data in game_list:
 		try:
 			game_base, game_odds = unpack(game_data)
@@ -133,8 +134,15 @@ def save_game_trends(game_list):
 			game_id = game.id
 			num_game += 1
 		else:
+			# 实时更新比赛专家推荐数
+			result.endorse = game.endorse
 			game = result
 			game_id = result.id
+
+		# 跳过截止时间已过的比赛
+		if current > game.deadline + timedelta(minutes=1):
+			continue
+
 		game_odds['game_id'] = game_id
 		real_time = GameOdds(**game_odds)
 		real_time.game = game
