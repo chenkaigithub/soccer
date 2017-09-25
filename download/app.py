@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 import os
 import sys
+import traceback
 from time import sleep
 
 import json
@@ -62,7 +63,11 @@ def get_results():
 		data = response.replace('\'', '\"')
 
 		result_dict = json.loads(data)
-		results += parser.parse_results(result_dict)
+		try:
+			results += parser.parse_results(result_dict)
+		except:
+			print("\t处理日期{}结果数据时出错".format(date_str))
+			traceback.print_tb()
 	print('比赛结果数据提取结束, 共找到{}场比赛结果\n'.format(len(results)))
 	return results
 
@@ -147,4 +152,5 @@ def run_once():
 
 
 if __name__ == '__main__':
-	main()
+	# main()
+	run_once()

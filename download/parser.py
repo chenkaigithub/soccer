@@ -91,6 +91,8 @@ def parse_results(result_dict):
 		serial_number = game_date + game_id
 		score_raw = games[game_id]['wholeScore']
 		if len(score_raw) > 0:
+			if ':' not in score_raw:
+				continue
 			host, guest = score_raw.split(':')
 			results.append({
 				'serial': serial_number,

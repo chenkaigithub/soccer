@@ -49,19 +49,23 @@ class Game(Base):
 	def result(self):
 		return "<比赛{}结果 {}:{}>".format(self.serial, self.host_score, self.guest_score)
 
+	def date(self):
+		date_str = self.serial[:8]
+		return date_str
+
 
 class GameOdds(Base):
 	__tablename__ = 'game_odds'
 
 	id = Column(Integer, primary_key=True)
-	game_id = Column(Integer, ForeignKey('game.id'))
+	game_id     = Column(Integer, ForeignKey('game.id'))
 	record_time = Column(DateTime, default=datetime.now)
-	win = Column(Float(5))
-	draw = Column(Float(5))
-	lose = Column(Float(5))
-	cwin = Column('concede_win', Float(5))
-	cdraw = Column('concede_draw', Float(5))
-	close = Column('concede_lose', Float(5))
+	win         = Column(Float(5))
+	draw        = Column(Float(5))
+	lose        = Column(Float(5))
+	cwin        = Column('concede_win', Float(5))
+	cdraw       = Column('concede_draw', Float(5))
+	close       = Column('concede_lose', Float(5))
 
 	game = relationship('Game', back_populates='points')
 
