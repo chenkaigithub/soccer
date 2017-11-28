@@ -4,6 +4,11 @@ DATA_SOURCE_FILE = 'source.csv'
 
 DATA_SAVE_FILE = 'dataset.pickle'
 
-NUM_LABELS = 9
+DB_USER = 'ethan'
+DB_PASS = 'qwerasdf'
+DB_HOST = '120.76.126.214'
+DB_NAME = 'soccer'
 
-FEATURE_SIZE = 13
+TREND_MAX_HOUR = 6
+NUM_LABELS = 8
+FEATURE_SIZE = TREND_MAX_HOUR * 12 * 6 + 2
