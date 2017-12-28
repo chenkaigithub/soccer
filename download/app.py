@@ -63,11 +63,15 @@ def get_results():
         data = response.replace('\'', '\"')
 
         result_dict = json.loads(data)
+        if not result_dict:
+            print("\t处理日期{}结果数据时出错: 无结果".format(date_str))
+            continue
         try:
             results += parser.parse_results(result_dict)
-        except:
+        except Exception as e:
             print("\t处理日期{}结果数据时出错".format(date_str))
-            traceback.print_tb()
+            print(e)
+            # traceback.print_tb()
     print('比赛结果数据提取结束, 共找到{}场比赛结果\n'.format(len(results)))
     return results
 
