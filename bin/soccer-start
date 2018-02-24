@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo "Starting soccer download program..."
+
+LOGFILE=`date +%Y-%m-%d`.log
+LOGPATH=/root/creativelabchengdu/logs/soccer$LOGFILE
+nohup soccer-download > $LOGPATH &
+
